@@ -71,7 +71,8 @@ func (s *Stream) UpdateJPEG(jpeg []byte) {
 	//I was always one frame behind but by sending them both and removing the sleep up above i seem to be in sync
 	for c := range s.m {
 		c <- s.frame
-		time.Sleep(s.FrameInterval)
+		// time.Sleep(s.FrameInterval)
+		time.Sleep(5)
 		c <- s.frame
 		// Select to skip streams which are sleeping to drop frames.
 		// This might need more thought.

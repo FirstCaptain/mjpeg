@@ -41,10 +41,12 @@ func (s *Stream) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	s.lock.Unlock()
 
 	for {
-		time.Sleep(s.FrameInterval)
+		// time.Sleep(s.FrameInterval)
 		b := <-c
+		// fmt.Println("Writing")
 		_, err := w.Write(b)
 		if err != nil {
+			fmt.Println(err)
 			break
 		}
 	}
@@ -64,15 +66,19 @@ func (s *Stream) UpdateJPEG(jpeg []byte) {
 
 	copy(s.frame, header)
 	copy(s.frame[len(header):], jpeg)
-
 	s.lock.Lock()
+
+	//I was always one frame behind but by sending them both and removing the sleep up above i seem to be in sync
 	for c := range s.m {
+		c <- s.frame
+		time.Sleep(s.FrameInterval)
+		c <- s.frame
 		// Select to skip streams which are sleeping to drop frames.
 		// This might need more thought.
-		select {
-		case c <- s.frame:
-		default:
-		}
+		// select {
+		// case c <- s.frame:
+		// default:
+		// }
 	}
 	s.lock.Unlock()
 }
